@@ -20,8 +20,6 @@ Flags:
 ## Example
 
 ```sh
-$ get
-```
 $ aws secretsmanager get-secret-value --secret-id foo/bar
 {
   ...
@@ -33,7 +31,7 @@ $ aws secretsmanager get-secret-value --secret-id foo/zoo # JSON secret
   ...
   "SecretString": "{\"TOKEN\":\"AAA\",\"SECRET\":\"BBB\"}",
   ...
-
+```
 
 ```sh
 $ cat ~/.sev.toml

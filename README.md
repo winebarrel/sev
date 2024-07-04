@@ -46,11 +46,11 @@ FOGA = "foo/bar"
 
 ```sh
 # Run `env` command with extra environment variables
-$ sev default env
+$ sev default -- env
 FOO=BAZ
 ZOO=AAA
 
-$ sev another env
+$ sev another -- env
 HOGE=BBB
 FUGA=BAZ
 ```

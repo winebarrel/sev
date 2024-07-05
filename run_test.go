@@ -238,13 +238,9 @@ HOGE = "PIYO"
 
 	awsConfig, _ := os.CreateTemp("", "")
 	defer os.Remove(awsConfig.Name())
-	awsConfig.WriteString(``)
-	awsConfig.Sync()
 
 	awsSharedCredentials, _ := os.CreateTemp("", "")
 	defer os.Remove(awsSharedCredentials.Name())
-	awsSharedCredentials.WriteString(``)
-	awsSharedCredentials.Sync()
 
 	defer func() {
 		_stdout = os.Stdout

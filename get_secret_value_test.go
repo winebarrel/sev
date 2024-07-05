@@ -91,3 +91,20 @@ func Test_getSecretValue_Err_JSON(t *testing.T) {
 	_, err := sev.GetSecretValue(svc, "foo/bar/zoo:HOGE")
 	assert.ErrorContains(err, "failed to parse 'foo/bar/zoo'")
 }
+
+func Test_getSecretValue_Err_KeyNotFound(t *testing.T) {
+	assert := assert.New(t)
+
+	svc := mockGetSecretValueAPI(func(ctx context.Context, params *secretsmanager.GetSecretValueInput, optFns ...func(*secretsmanager.Options)) (*secretsmanager.GetSecretValueOutput, error) {
+		assert.Equal("foo/bar/zoo", aws.ToString(params.SecretId))
+
+		outout := &secretsmanager.GetSecretValueOutput{
+			SecretString: aws.String(`{"HOGE":"FUGA","PIYO":"HOGERA"}`),
+		}
+
+		return outout, nil
+	})
+
+	_, err := sev.GetSecretValue(svc, "foo/bar/zoo:BAZ")
+	assert.ErrorContains(err, "key could not be found in 'foo/bar/zoo': 'BAZ'")
+}

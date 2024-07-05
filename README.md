@@ -66,7 +66,7 @@ PIYO=PIYOPIYOPIYO
 
 ```sh
 $ cat script.sh
-#!/usr/bin/sev default -- bash
+#!sev default -- bash
 echo $FOO
 ```
 

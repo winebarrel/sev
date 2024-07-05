@@ -1,5 +1,7 @@
 # sev
 
+[![CI](https://github.com/winebarrel/sev/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/sev/actions/workflows/ci.yml)
+
 A tool that retrieves AWS Secrets Manager secret values, sets them to environment variables, and executes commands.
 
 ## Usage

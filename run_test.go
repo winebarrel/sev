@@ -174,6 +174,8 @@ aws_secret_access_key = "dummy"
 		_stderr = os.Stderr
 	}()
 
+	t.Setenv("AWS_REGION", "")
+	t.Setenv("AWS_DEFAULT_REGION", "")
 	t.Setenv("AWS_CONFIG_FILE", awsConfig.Name())
 	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", awsSharedCredentials.Name())
 
@@ -249,6 +251,8 @@ HOGE = "PIYO"
 		_stderr = os.Stderr
 	}()
 
+	t.Setenv("AWS_REGION", "")
+	t.Setenv("AWS_DEFAULT_REGION", "")
 	t.Setenv("AWS_CONFIG_FILE", awsConfig.Name())
 	t.Setenv("AWS_SHARED_CREDENTIALS_FILE", awsSharedCredentials.Name())
 

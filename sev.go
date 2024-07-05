@@ -11,7 +11,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
@@ -21,14 +20,8 @@ var (
 	_stderr io.Writer = os.Stderr
 )
 
-func Run(options *Options) error {
+func Run(cfg aws.Config, options *Options) error {
 	envFrom, err := loadEnvFrom(options.Config, options.Profile)
-
-	if err != nil {
-		return err
-	}
-
-	cfg, err := config.LoadDefaultConfig(context.Background())
 
 	if err != nil {
 		return err

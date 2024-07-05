@@ -16,7 +16,7 @@ Arguments:
 Flags:
   -h, --help                         Show help.
       --config="~/.sev.toml"         Config file path ($SEV_CONFIG).
-      --[no-]override-aws-profile    Use AWS_PROFILE in sev config. (enabled by default)
+      --[no-]override-aws-profile    Use AWS_PROFILE in sev config (enabled by default).
       --version
 ```
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,6 +13,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+)
+
+var (
+	_stdin  io.Reader = os.Stdin
+	_stdout io.Writer = os.Stdout
+	_stderr io.Writer = os.Stderr
 )
 
 func Run(options *Options) error {
@@ -116,8 +123,9 @@ func execCmd(cmdArgs []string, extraEnv map[string]string) error {
 	}
 
 	cmd := exec.Command(name, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
+	cmd.Stdin = _stdin
+	cmd.Stdout = _stdout
+	cmd.Stderr = _stderr
 	cmd.Env = env
 
 	return cmd.Run()

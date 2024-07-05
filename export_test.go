@@ -1,5 +1,6 @@
 package sev
 
 var (
-	LoadEnvFrom = loadEnvFrom
+	LoadEnvFrom    = loadEnvFrom
+	GetSecretValue = getSecretValue
 )

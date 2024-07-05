@@ -58,7 +58,7 @@ func Test_execCmd_WithArgs(t *testing.T) {
 
 	err := execCmd(cmd, env)
 	require.NoError(err)
-	assert.Equal(bufout.String(), "BAR BAZ\n")
+	assert.Equal("BAR BAZ\n", bufout.String())
 	assert.Empty(buferr.String())
 }
 

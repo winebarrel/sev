@@ -26,11 +26,11 @@ piyo = "hogera"
 
 	envAbc, err := sev.LoadEnvFrom(tomlFile.Name(), "abc")
 	require.NoError(err)
-	assert.Equal(envAbc, map[string]string{"FOO": "BAR", "ZOO": "BAZ"})
+	assert.Equal(map[string]string{"FOO": "BAR", "ZOO": "BAZ"}, envAbc)
 
 	envDef, err := sev.LoadEnvFrom(tomlFile.Name(), "DEF")
 	require.NoError(err)
-	assert.Equal(envDef, map[string]string{"hoge": "fuga", "piyo": "hogera"})
+	assert.Equal(map[string]string{"hoge": "fuga", "piyo": "hogera"}, envDef)
 }
 
 func Test_loadEnfFrom_Err_ConfigNotExists(t *testing.T) {

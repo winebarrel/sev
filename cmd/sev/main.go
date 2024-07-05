@@ -1,12 +1,10 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 
 	"github.com/alecthomas/kong"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/winebarrel/sev"
 )
 
@@ -32,13 +30,7 @@ func parseArgs() *sev.Options {
 
 func main() {
 	options := parseArgs()
-	cfg, err := config.LoadDefaultConfig(context.Background())
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = sev.Run(cfg, options)
+	err := sev.Run(options)
 
 	if err != nil {
 		log.Fatal(err)

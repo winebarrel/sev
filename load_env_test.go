@@ -44,7 +44,7 @@ func Test_loadEnv_OK(t *testing.T) {
 			"SecretString":"%s",
 			"VersionId":"5048d25e-e46f-4a6c-87d9-b358e5c5dfcf",
 			"VersionStages":["AWSCURRENT"]
-		}'`, val)), nil
+		}`, val)), nil
 	})
 
 	envFrom := map[string]string{
@@ -97,7 +97,7 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 			"SecretString":"%s",
 			"VersionId":"5048d25e-e46f-4a6c-87d9-b358e5c5dfcf",
 			"VersionStages":["AWSCURRENT"]
-		}'`, val)), nil
+		}`, val)), nil
 	})
 
 	envFrom := map[string]string{

@@ -61,3 +61,16 @@ HOGE=BBB
 FUGA=BAZ
 PIYO=PIYOPIYOPIYO
 ```
+
+## Use in shebang
+
+```sh
+$ cat script.sh
+#!/usr/bin/sev default -- bash
+echo $FOO
+```
+
+```sh
+$ ./script.sh
+BAZ
+```

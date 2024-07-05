@@ -11,6 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
@@ -21,11 +22,30 @@ var (
 )
 
 const (
+	KeyAWSProfile        = "AWS_PROFILE"
 	PrefixSecretsManager = "secretsmanager://"
 )
 
-func Run(cfg aws.Config, options *Options) error {
+func Run(options *Options) error {
 	envFrom, err := loadEnvFrom(options.Config, options.Profile)
+
+	if err != nil {
+		return err
+	}
+
+	optFns := options.AWSConfigOptFns
+
+	if options.OverrideAwsProfile {
+		awsProfile, ok := envFrom[KeyAWSProfile]
+
+		if !ok {
+			return fmt.Errorf("'%s' could not be found in sev config", KeyAWSProfile)
+		}
+
+		optFns = append(optFns, config.WithSharedConfigProfile(awsProfile))
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.Background(), optFns...)
 
 	if err != nil {
 		return err

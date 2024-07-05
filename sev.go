@@ -20,6 +20,10 @@ var (
 	_stderr io.Writer = os.Stderr
 )
 
+const (
+	PrefixSecretsManager = "secretsmanager://"
+)
+
 func Run(cfg aws.Config, options *Options) error {
 	envFrom, err := loadEnvFrom(options.Config, options.Profile)
 
@@ -58,10 +62,17 @@ func loadEnv(cfg aws.Config, envFrom map[string]string) (map[string]string, erro
 	svc := secretsmanager.NewFromConfig(cfg)
 
 	for name, from := range envFrom {
-		value, err := getSecretValue(svc, from)
+		value := from
 
-		if err != nil {
-			return nil, err
+		if strings.HasPrefix(from, PrefixSecretsManager) {
+			from = strings.Replace(from, PrefixSecretsManager, "", 1)
+
+			var err error
+			value, err = getSecretValue(svc, from)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		env[name] = value

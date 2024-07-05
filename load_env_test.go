@@ -48,8 +48,9 @@ func Test_loadEnv_OK(t *testing.T) {
 	})
 
 	envFrom := map[string]string{
-		"FOO":  "foo/bar/zoo",
-		"PIYO": "hoge/fuga/piyo",
+		"FOO":   "secretsmanager://foo/bar/zoo",
+		"PIYO":  "secretsmanager://hoge/fuga/piyo",
+		"HELLO": "world",
 	}
 
 	t.Setenv("AWS_REGION", "us-east-1")
@@ -62,8 +63,9 @@ func Test_loadEnv_OK(t *testing.T) {
 	value, err := sev.LoadEnv(cfg, envFrom)
 	require.NoError(err)
 	assert.Equal(map[string]string{
-		"FOO":  "BAZ",
-		"PIYO": "HOGERA",
+		"FOO":   "BAZ",
+		"PIYO":  "HOGERA",
+		"HELLO": "world",
 	}, value)
 }
 
@@ -99,8 +101,9 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 	})
 
 	envFrom := map[string]string{
-		"FOO":  "foo/bar/zoo:FOO",
-		"PIYO": "hoge/fuga/piyo:FUGA",
+		"FOO":   "secretsmanager://foo/bar/zoo:FOO",
+		"PIYO":  "secretsmanager://hoge/fuga/piyo:FUGA",
+		"HELLO": "world",
 	}
 
 	t.Setenv("AWS_REGION", "us-east-1")
@@ -113,8 +116,9 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 	value, err := sev.LoadEnv(cfg, envFrom)
 	require.NoError(err)
 	assert.Equal(map[string]string{
-		"FOO":  "BAR",
-		"PIYO": "FUGAFUGA",
+		"FOO":   "BAR",
+		"PIYO":  "FUGAFUGA",
+		"HELLO": "world",
 	}, value)
 }
 
@@ -131,8 +135,8 @@ func Test_loadEnv_Err(t *testing.T) {
 	})
 
 	envFrom := map[string]string{
-		"FOO":  "foo/bar/zoo",
-		"PIYO": "hoge/fuga/piyo",
+		"FOO":  "secretsmanager://foo/bar/zoo",
+		"PIYO": "secretsmanager://hoge/fuga/piyo",
 	}
 
 	t.Setenv("AWS_REGION", "us-east-1")
@@ -162,7 +166,7 @@ func Test_loadEnv_Err_NotFound(t *testing.T) {
 	})
 
 	envFrom := map[string]string{
-		"FOO": "foo/bar/zoo",
+		"FOO": "secretsmanager://foo/bar/zoo",
 	}
 
 	t.Setenv("AWS_REGION", "us-east-1")

@@ -49,9 +49,11 @@ func Test_Run_OK(t *testing.T) {
 	tomlFile, _ := os.CreateTemp("", "")
 	defer os.Remove(tomlFile.Name())
 	tomlFile.WriteString(`[profile1]
-FOO = "foo/bar/zoo"
+FOO = "secretsmanager://foo/bar/zoo"
+BAR = "baz"
 [profile2]
-piyo = "hoge/fuga/piyo:FUGA"
+piyo = "secretsmanager://hoge/fuga/piyo:FUGA"
+HOGE = "PIYO"
 `)
 	tomlFile.Sync()
 
@@ -73,7 +75,7 @@ piyo = "hoge/fuga/piyo:FUGA"
 		options := &Options{
 			Config:  tomlFile.Name(),
 			Profile: "profile1",
-			Command: []string{"/bin/sh", "-c", "echo $FOO"},
+			Command: []string{"/bin/sh", "-c", "echo $FOO $BAR"},
 		}
 
 		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
@@ -82,7 +84,7 @@ piyo = "hoge/fuga/piyo:FUGA"
 		err = Run(cfg, options)
 		require.NoError(err)
 
-		assert.Equal("BAZ\n", bufout.String())
+		assert.Equal("BAZ baz\n", bufout.String())
 		assert.Empty(buferr.String())
 	}
 
@@ -95,7 +97,7 @@ piyo = "hoge/fuga/piyo:FUGA"
 		options := &Options{
 			Config:  tomlFile.Name(),
 			Profile: "profile2",
-			Command: []string{"/bin/sh", "-c", "echo $piyo"},
+			Command: []string{"/bin/sh", "-c", "echo $piyo $HOGE"},
 		}
 
 		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
@@ -104,7 +106,7 @@ piyo = "hoge/fuga/piyo:FUGA"
 		err = Run(cfg, options)
 		require.NoError(err)
 
-		assert.Equal("FUGAFUGA\n", bufout.String())
+		assert.Equal("FUGAFUGA PIYO\n", bufout.String())
 		assert.Empty(buferr.String())
 	}
 }

@@ -39,7 +39,7 @@ $ aws secretsmanager get-secret-value --secret-id foo/zoo # JSON secret
 ```sh
 $ cat ~/.sev.toml
 [default]
-BAR = "secretsmanager://foo/bar"
+FOO = "secretsmanager://foo/bar"
 ZOO = "secretsmanager://foo/zoo:TOKEN"
 BAZ = "BAZBAZBAZ"
 

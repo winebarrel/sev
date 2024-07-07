@@ -38,11 +38,9 @@ func Run(options *Options) error {
 	if options.OverrideAwsProfile {
 		awsProfile, ok := envFrom[KeyAWSProfile]
 
-		if !ok {
-			return fmt.Errorf("'%s' could not be found in sev config", KeyAWSProfile)
+		if ok {
+			optFns = append(optFns, config.WithSharedConfigProfile(awsProfile))
 		}
-
-		optFns = append(optFns, config.WithSharedConfigProfile(awsProfile))
 	}
 
 	cfg, err := config.LoadDefaultConfig(context.Background(), optFns...)

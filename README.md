@@ -39,6 +39,7 @@ $ aws secretsmanager get-secret-value --secret-id foo/zoo # JSON secret
 ```sh
 $ cat ~/.sev.toml
 [default]
+AWS_PROFILE = "prof1" # By default, the AWS_PROFILE in the configuration file is used.
 FOO = "secretsmanager://foo/bar"
 ZOO = "secretsmanager://foo/zoo:TOKEN"
 BAZ = "BAZBAZBAZ"

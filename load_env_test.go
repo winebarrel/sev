@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -57,10 +58,14 @@ func Test_loadEnv_OK(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-	require.NoError(err)
+	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
+		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+		require.NoError(err)
+		svc := secretsmanager.NewFromConfig(cfg)
+		return svc, nil
+	}
 
-	value, err := sev.LoadEnv(cfg, envFrom)
+	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
 	require.NoError(err)
 	assert.Equal(map[string]string{
 		"FOO":   "BAZ",
@@ -110,10 +115,14 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-	require.NoError(err)
+	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
+		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+		require.NoError(err)
+		svc := secretsmanager.NewFromConfig(cfg)
+		return svc, nil
+	}
 
-	value, err := sev.LoadEnv(cfg, envFrom)
+	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
 	require.NoError(err)
 	assert.Equal(map[string]string{
 		"FOO":   "BAR",
@@ -143,13 +152,17 @@ func Test_loadEnv_Err(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc), config.WithRetryer(func() aws.Retryer {
-		return retry.AddWithMaxAttempts(retry.NewStandard(), 1)
-	}))
+	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
+		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc), config.WithRetryer(func() aws.Retryer {
+			return retry.AddWithMaxAttempts(retry.NewStandard(), 1)
+		}))
 
-	require.NoError(err)
+		require.NoError(err)
+		svc := secretsmanager.NewFromConfig(cfg)
+		return svc, nil
+	}
 
-	_, err = sev.LoadEnv(cfg, envFrom)
+	_, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
 	assert.ErrorContains(err, "StatusCode: 503")
 }
 
@@ -173,9 +186,13 @@ func Test_loadEnv_Err_NotFound(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-	require.NoError(err)
+	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
+		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+		require.NoError(err)
+		svc := secretsmanager.NewFromConfig(cfg)
+		return svc, nil
+	}
 
-	_, err = sev.LoadEnv(cfg, envFrom)
+	_, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
 	assert.ErrorContains(err, `ResourceNotFoundException: Secrets Manager can\'t find the specified secret`)
 }

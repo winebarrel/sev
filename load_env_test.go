@@ -196,3 +196,27 @@ func Test_loadEnv_Err_NotFound(t *testing.T) {
 	_, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
 	assert.ErrorContains(err, `ResourceNotFoundException: Secrets Manager can\'t find the specified secret`)
 }
+
+func Test_loadEnv_Without_AWS(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	envFrom := map[string]string{
+		"FOO":   "BAR",
+		"PIYO":  "HOGE",
+		"HELLO": "world",
+	}
+
+	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
+		require.Fail("Must not call newSecretsManagerClient")
+		return nil, nil
+	}
+
+	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	require.NoError(err)
+	assert.Equal(map[string]string{
+		"FOO":   "BAR",
+		"PIYO":  "HOGE",
+		"HELLO": "world",
+	}, value)
+}

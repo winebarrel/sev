@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
 var (
@@ -24,6 +25,7 @@ var (
 const (
 	KeyAWSProfile        = "AWS_PROFILE"
 	PrefixSecretsManager = "secretsmanager://"
+	PrefixParameterStore = "parameterstore://"
 )
 
 type AWSConfigOptFns []func(*config.LoadOptions) error
@@ -91,6 +93,24 @@ func loadEnv(envFrom map[string]string, providers ProviderssIface) (map[string]s
 			if err != nil {
 				return nil, err
 			}
+		} else if strings.HasPrefix(from, PrefixParameterStore) {
+			svc, err := providers.NewSSMClient()
+
+			if err != nil {
+				return nil, err
+			}
+
+			from = strings.Replace(from, PrefixParameterStore, "", 1)
+
+			if !strings.HasPrefix(from, "/") {
+				from = "/" + from
+			}
+
+			value, err = getParameter(svc, from)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		env[name] = value
@@ -141,6 +161,26 @@ func getSecretValue(api SecretsManagerGetSecretValueAPI, from string) (string, e
 		value = vval
 	}
 
+	return value, nil
+}
+
+type SSMGetParameterAPI interface {
+	GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error)
+}
+
+func getParameter(api SSMGetParameterAPI, from string) (string, error) {
+	input := &ssm.GetParameterInput{
+		Name:           aws.String(from),
+		WithDecryption: aws.Bool(true),
+	}
+
+	output, err := api.GetParameter(context.Background(), input)
+
+	if err != nil {
+		return "", err
+	}
+
+	value := aws.ToString(output.Parameter.Value)
 	return value, nil
 }
 

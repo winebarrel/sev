@@ -63,15 +63,12 @@ FUGA=BAZ
 PIYO=PIYOPIYOPIYO
 ```
 
-## Use in shebang
+## Get values from Parameter Store
 
-```sh
-$ cat script.sh
-#!sev default -- bash
-echo $FOO
-```
-
-```sh
-$ ./script.sh
-BAZ
+```toml
+[default]
+AWS_PROFILE = "prof1"
+FOO = "parameterstore:///foo/bar"
+ZOO = "parameterstore:///foo/zoo"
+BAZ = "BAZBAZBAZ"
 ```

@@ -4,4 +4,5 @@ var (
 	LoadEnvFrom    = loadEnvFrom
 	LoadEnv        = loadEnv
 	GetSecretValue = getSecretValue
+	GetParameter   = getParameter
 )

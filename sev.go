@@ -26,6 +26,8 @@ const (
 	PrefixSecretsManager = "secretsmanager://"
 )
 
+type AWSConfigOptFns []func(*config.LoadOptions) error
+
 func Run(options *Options) error {
 	envFrom, err := loadEnvFrom(options.Config, options.Profile)
 
@@ -43,19 +45,8 @@ func Run(options *Options) error {
 		}
 	}
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		cfg, err := config.LoadDefaultConfig(context.Background(), optFns...)
-
-		if err != nil {
-			return nil, err
-		}
-
-		svc := secretsmanager.NewFromConfig(cfg)
-
-		return svc, nil
-	}
-
-	env, err := loadEnv(envFrom, newSecretsManagerClient)
+	providers := NewProviders(optFns)
+	env, err := loadEnv(envFrom, providers)
 
 	if err != nil {
 		return err
@@ -81,22 +72,17 @@ func loadEnvFrom(config string, profile string) (map[string]string, error) {
 	return envFrom, nil
 }
 
-func loadEnv(envFrom map[string]string, newSecretsManagerClient func() (*secretsmanager.Client, error)) (map[string]string, error) {
+func loadEnv(envFrom map[string]string, providers ProviderssIface) (map[string]string, error) {
 	env := map[string]string{}
-	var svc *secretsmanager.Client
 
 	for name, from := range envFrom {
 		value := from
 
 		if strings.HasPrefix(from, PrefixSecretsManager) {
-			var err error
+			svc, err := providers.NewSecretsManagerClient()
 
-			if svc == nil {
-				svc, err = newSecretsManagerClient()
-
-				if err != nil {
-					return nil, err
-				}
+			if err != nil {
+				return nil, err
 			}
 
 			from = strings.Replace(from, PrefixSecretsManager, "", 1)

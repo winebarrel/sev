@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -19,10 +20,15 @@ import (
 
 type mockProviders struct {
 	newSecretsManagerClient func() (*secretsmanager.Client, error)
+	newSSMClient            func() (*ssm.Client, error)
 }
 
 func (p *mockProviders) NewSecretsManagerClient() (*secretsmanager.Client, error) {
 	return p.newSecretsManagerClient()
+}
+
+func (p *mockProviders) NewSSMClient() (*ssm.Client, error) {
+	return p.newSSMClient()
 }
 
 func Test_loadEnv_OK(t *testing.T) {
@@ -43,7 +49,7 @@ func Test_loadEnv_OK(t *testing.T) {
 		case `{"SecretId":"hoge/fuga/piyo"}`:
 			val = "HOGERA"
 		default:
-			val = fmt.Sprintf("unexpected secret id: %s", body)
+			assert.Fail("unexpected secret id: " + string(body))
 		}
 
 		return httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`{
@@ -102,7 +108,7 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 		case `{"SecretId":"hoge/fuga/piyo"}`:
 			val = `{\"FUGA\":\"FUGAFUGA\",\"gafu\":\"gafugafu\"}`
 		default:
-			val = fmt.Sprintf("unexpected secret id: %s", body)
+			assert.Fail("unexpected secret id: " + string(body))
 		}
 
 		return httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`{

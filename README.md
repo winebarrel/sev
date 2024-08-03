@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/winebarrel/sev/actions/workflows/ci.yml/badge.svg)](https://github.com/winebarrel/sev/actions/workflows/ci.yml)
 
-A tool that retrieves AWS Secrets Manager secret values, sets them to environment variables, and executes commands.
+A tool that retrieves AWS Secrets Manager / Parameter Store values, sets them to environment variables, and executes commands.
 
 ## Usage
 
@@ -63,15 +63,12 @@ FUGA=BAZ
 PIYO=PIYOPIYOPIYO
 ```
 
-## Use in shebang
+## Get values from Parameter Store
 
-```sh
-$ cat script.sh
-#!sev default -- bash
-echo $FOO
-```
-
-```sh
-$ ./script.sh
-BAZ
+```toml
+[default]
+AWS_PROFILE = "prof1"
+FOO = "parameterstore:///foo/bar"
+ZOO = "parameterstore:///foo/zoo"
+BAZ = "BAZBAZBAZ"
 ```

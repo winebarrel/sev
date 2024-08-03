@@ -17,6 +17,14 @@ import (
 	"github.com/winebarrel/sev"
 )
 
+type mockProviders struct {
+	newSecretsManagerClient func() (*secretsmanager.Client, error)
+}
+
+func (p *mockProviders) NewSecretsManagerClient() (*secretsmanager.Client, error) {
+	return p.newSecretsManagerClient()
+}
+
 func Test_loadEnv_OK(t *testing.T) {
 	assert := assert.New(t)
 	require := require.New(t)
@@ -58,14 +66,16 @@ func Test_loadEnv_OK(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-		require.NoError(err)
-		svc := secretsmanager.NewFromConfig(cfg)
-		return svc, nil
+	providers := &mockProviders{
+		newSecretsManagerClient: func() (*secretsmanager.Client, error) {
+			cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+			require.NoError(err)
+			svc := secretsmanager.NewFromConfig(cfg)
+			return svc, nil
+		},
 	}
 
-	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	value, err := sev.LoadEnv(envFrom, providers)
 	require.NoError(err)
 	assert.Equal(map[string]string{
 		"FOO":   "BAZ",
@@ -115,14 +125,16 @@ func Test_loadEnv_OK_JSON(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-		require.NoError(err)
-		svc := secretsmanager.NewFromConfig(cfg)
-		return svc, nil
+	providers := &mockProviders{
+		newSecretsManagerClient: func() (*secretsmanager.Client, error) {
+			cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+			require.NoError(err)
+			svc := secretsmanager.NewFromConfig(cfg)
+			return svc, nil
+		},
 	}
 
-	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	value, err := sev.LoadEnv(envFrom, providers)
 	require.NoError(err)
 	assert.Equal(map[string]string{
 		"FOO":   "BAR",
@@ -152,17 +164,19 @@ func Test_loadEnv_Err(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc), config.WithRetryer(func() aws.Retryer {
-			return retry.AddWithMaxAttempts(retry.NewStandard(), 1)
-		}))
+	providers := &mockProviders{
+		newSecretsManagerClient: func() (*secretsmanager.Client, error) {
+			cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc), config.WithRetryer(func() aws.Retryer {
+				return retry.AddWithMaxAttempts(retry.NewStandard(), 1)
+			}))
 
-		require.NoError(err)
-		svc := secretsmanager.NewFromConfig(cfg)
-		return svc, nil
+			require.NoError(err)
+			svc := secretsmanager.NewFromConfig(cfg)
+			return svc, nil
+		},
 	}
 
-	_, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	_, err := sev.LoadEnv(envFrom, providers)
 	assert.ErrorContains(err, "StatusCode: 503")
 }
 
@@ -186,14 +200,16 @@ func Test_loadEnv_Err_NotFound(t *testing.T) {
 	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
-		require.NoError(err)
-		svc := secretsmanager.NewFromConfig(cfg)
-		return svc, nil
+	providers := &mockProviders{
+		newSecretsManagerClient: func() (*secretsmanager.Client, error) {
+			cfg, err := config.LoadDefaultConfig(context.Background(), config.WithHTTPClient(hc))
+			require.NoError(err)
+			svc := secretsmanager.NewFromConfig(cfg)
+			return svc, nil
+		},
 	}
 
-	_, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	_, err := sev.LoadEnv(envFrom, providers)
 	assert.ErrorContains(err, `ResourceNotFoundException: Secrets Manager can\'t find the specified secret`)
 }
 
@@ -207,12 +223,14 @@ func Test_loadEnv_Without_AWS(t *testing.T) {
 		"HELLO": "world",
 	}
 
-	newSecretsManagerClient := func() (*secretsmanager.Client, error) {
-		require.Fail("Must not call newSecretsManagerClient")
-		return nil, nil
+	providers := &mockProviders{
+		newSecretsManagerClient: func() (*secretsmanager.Client, error) {
+			require.Fail("Must not call newSecretsManagerClient")
+			return nil, nil
+		},
 	}
 
-	value, err := sev.LoadEnv(envFrom, newSecretsManagerClient)
+	value, err := sev.LoadEnv(envFrom, providers)
 	require.NoError(err)
 	assert.Equal(map[string]string{
 		"FOO":   "BAR",

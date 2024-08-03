@@ -33,6 +33,6 @@ func main() {
 	err := sev.Run(options)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("sev error: %s", err)
 	}
 }

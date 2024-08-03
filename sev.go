@@ -87,11 +87,11 @@ func loadEnv(envFrom map[string]string, providers ProviderssIface) (map[string]s
 				return nil, err
 			}
 
-			from = strings.Replace(from, PrefixSecretsManager, "", 1)
-			value, err = getSecretValue(svc, from)
+			fromWitoutPrefix := strings.Replace(from, PrefixSecretsManager, "", 1)
+			value, err = getSecretValue(svc, fromWitoutPrefix)
 
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to get %s: %w", from, err)
 			}
 		} else if strings.HasPrefix(from, PrefixParameterStore) {
 			svc, err := providers.NewSSMClient()
@@ -100,16 +100,16 @@ func loadEnv(envFrom map[string]string, providers ProviderssIface) (map[string]s
 				return nil, err
 			}
 
-			from = strings.Replace(from, PrefixParameterStore, "", 1)
+			fromWitoutPrefix := strings.Replace(from, PrefixParameterStore, "", 1)
 
-			if !strings.HasPrefix(from, "/") {
-				from = "/" + from
+			if !strings.HasPrefix(fromWitoutPrefix, "/") {
+				fromWitoutPrefix = "/" + fromWitoutPrefix
 			}
 
-			value, err = getParameter(svc, from)
+			value, err = getParameter(svc, fromWitoutPrefix)
 
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to get %s: %w", from, err)
 			}
 		}
 

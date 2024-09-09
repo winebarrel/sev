@@ -31,7 +31,7 @@ const (
 type AWSConfigOptFns []func(*config.LoadOptions) error
 
 func Run(options *Options) error {
-	envFrom, err := loadEnvFrom(options.Config, options.Profile)
+	envFrom, err := loadEnvFrom(options.Config, options.Profile, options.DefaultProfile)
 
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func Run(options *Options) error {
 	return execCmd(options.Command, env)
 }
 
-func loadEnvFrom(config string, profile string) (map[string]string, error) {
+func loadEnvFrom(config string, profile string, fallback string) (map[string]string, error) {
 	var envFromByProfile map[string]map[string]string
 	_, err := toml.DecodeFile(config, &envFromByProfile)
 
@@ -68,7 +68,15 @@ func loadEnvFrom(config string, profile string) (map[string]string, error) {
 	envFrom, ok := envFromByProfile[profile]
 
 	if !ok {
-		return nil, fmt.Errorf("profile could not be found: %s", profile)
+		if fallback == "" {
+			return nil, fmt.Errorf("profile could not be found: %s", profile)
+		}
+
+		envFrom, ok = envFromByProfile[fallback]
+
+		if !ok {
+			return nil, fmt.Errorf("fallback profile could not be found: %s", fallback)
+		}
 	}
 
 	return envFrom, nil

@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/alecthomas/kong v0.9.0
+	github.com/alecthomas/kong v1.2.1
 	github.com/aws/aws-sdk-go-v2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.33
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.32.8

@@ -7,7 +7,7 @@ A tool that retrieves AWS Secrets Manager / Parameter Store values, sets them to
 ## Usage
 
 ```
-Usage: sev --config="~/.sev.toml" <profile> <command> ... [flags]
+Usage: sev --config-glob="~/.sev.toml" <profile> <command> ... [flags]
 
 Arguments:
   <profile>        Profile name.
@@ -15,7 +15,7 @@ Arguments:
 
 Flags:
   -h, --help                         Show help.
-      --config="~/.sev.toml"         Config file path ($SEV_CONFIG).
+      --config-glob="~/.sev.toml"    Config file path glob pattern ($SEV_CONFIG).
       --default-profile=STRING       Fallback profile name ($SEV_DEFAULT_PROFILE).
       --[no-]override-aws-profile    Use AWS_PROFILE in sev config (enabled by default).
       --version

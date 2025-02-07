@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 var (
@@ -31,7 +32,7 @@ const (
 type AWSConfigOptFns []func(*config.LoadOptions) error
 
 func Run(options *Options) error {
-	envFrom, err := loadEnvFrom(options.Config, options.Profile, options.DefaultProfile)
+	envFrom, err := loadEnvFrom(options.ConfigGlob, options.Profile, options.DefaultProfile)
 
 	if err != nil {
 		return err
@@ -57,12 +58,28 @@ func Run(options *Options) error {
 	return execCmd(options.Command, env)
 }
 
-func loadEnvFrom(config string, profile string, fallback string) (map[string]string, error) {
+func loadEnvFrom(configGlob string, profile string, fallback string) (map[string]string, error) {
 	var envFromByProfile map[string]map[string]string
-	_, err := toml.DecodeFile(config, &envFromByProfile)
+	configs, err := doublestar.FilepathGlob(configGlob,
+		doublestar.WithFailOnIOErrors(),
+		doublestar.WithFailOnPatternNotExist(),
+		doublestar.WithFilesOnly(),
+	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if len(configs) == 0 {
+		return nil, fmt.Errorf("pattern does not exist")
+	}
+
+	for _, config := range configs {
+		_, err := toml.DecodeFile(config, &envFromByProfile)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	envFrom, ok := envFromByProfile[profile]

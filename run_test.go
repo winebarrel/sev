@@ -72,9 +72,9 @@ HOGE = "PIYO"
 		_stderr = buferr
 
 		options := &Options{
-			Config:  tomlFile.Name(),
-			Profile: "profile1",
-			Command: []string{"/bin/sh", "-c", "echo $FOO $BAR"},
+			ConfigGlob: tomlFile.Name(),
+			Profile:    "profile1",
+			Command:    []string{"/bin/sh", "-c", "echo $FOO $BAR"},
 		}
 
 		options.AWSConfigOptFns = append(options.AWSConfigOptFns, config.WithHTTPClient(hc))
@@ -92,9 +92,100 @@ HOGE = "PIYO"
 		_stderr = buferr
 
 		options := &Options{
-			Config:  tomlFile.Name(),
-			Profile: "profile2",
-			Command: []string{"/bin/sh", "-c", "echo $piyo $HOGE"},
+			ConfigGlob: tomlFile.Name(),
+			Profile:    "profile2",
+			Command:    []string{"/bin/sh", "-c", "echo $piyo $HOGE"},
+		}
+
+		options.AWSConfigOptFns = append(options.AWSConfigOptFns, config.WithHTTPClient(hc))
+		err := Run(options)
+		require.NoError(err)
+
+		assert.Equal("FUGAFUGA PIYO\n", bufout.String())
+		assert.Empty(buferr.String())
+	}
+}
+
+func Test_Run_OK_Glob(t *testing.T) {
+	assert := assert.New(t)
+	require := require.New(t)
+
+	hc := &http.Client{}
+	httpmock.ActivateNonDefault(hc)
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder(http.MethodPost, "https://secretsmanager.us-east-1.amazonaws.com/", func(req *http.Request) (*http.Response, error) {
+		body, _ := io.ReadAll(req.Body)
+		val := ""
+
+		switch string(body) {
+		case `{"SecretId":"foo/bar/zoo"}`:
+			val = "BAZ"
+		case `{"SecretId":"hoge/fuga/piyo"}`:
+			val = `{\"FUGA\":\"FUGAFUGA\"}`
+		default:
+			val = fmt.Sprintf("unexpected secret id: %s", body)
+		}
+
+		return httpmock.NewStringResponse(http.StatusOK, fmt.Sprintf(`{
+			"ARN":"arn:aws:secretsmanager:us-east-1:123456789012:secret:<secret-id>",
+			"CreatedDate":0,
+			"Name":"<secret-id>",
+			"SecretString":"%s",
+			"VersionId":"5048d25e-e46f-4a6c-87d9-b358e5c5dfcf",
+			"VersionStages":["AWSCURRENT"]
+		}`, val)), nil
+	})
+
+	d := t.TempDir()
+	os.WriteFile(d+"/foo.toml", []byte(`[profile1]
+FOO = "secretsmanager://foo/bar/zoo"
+BAR = "baz"
+`), 0600)
+	os.WriteFile(d+"/bar.toml", []byte(`[profile2]
+piyo = "secretsmanager://hoge/fuga/piyo:FUGA"
+HOGE = "PIYO"
+`), 0600)
+
+	defer func() {
+		_stdout = os.Stdout
+		_stderr = os.Stderr
+	}()
+
+	t.Setenv("AWS_REGION", "us-east-1")
+	t.Setenv("AWS_ACCESS_KEY_ID", "dummy")
+	t.Setenv("AWS_SECRET_ACCESS_KEY", "dummy")
+
+	{
+		bufout := &bytes.Buffer{}
+		buferr := &bytes.Buffer{}
+		_stdout = bufout
+		_stderr = buferr
+
+		options := &Options{
+			ConfigGlob: d + "/*.toml",
+			Profile:    "profile1",
+			Command:    []string{"/bin/sh", "-c", "echo $FOO $BAR"},
+		}
+
+		options.AWSConfigOptFns = append(options.AWSConfigOptFns, config.WithHTTPClient(hc))
+		err := Run(options)
+		require.NoError(err)
+
+		assert.Equal("BAZ baz\n", bufout.String())
+		assert.Empty(buferr.String())
+	}
+
+	{
+		bufout := &bytes.Buffer{}
+		buferr := &bytes.Buffer{}
+		_stdout = bufout
+		_stderr = buferr
+
+		options := &Options{
+			ConfigGlob: d + "/*.toml",
+			Profile:    "profile2",
+			Command:    []string{"/bin/sh", "-c", "echo $piyo $HOGE"},
 		}
 
 		options.AWSConfigOptFns = append(options.AWSConfigOptFns, config.WithHTTPClient(hc))
@@ -186,7 +277,7 @@ aws_secret_access_key = "dummy"
 		_stderr = buferr
 
 		options := &Options{
-			Config:             tomlFile.Name(),
+			ConfigGlob:         tomlFile.Name(),
 			Profile:            "profile1",
 			Command:            []string{"/bin/sh", "-c", "echo $FOO $BAR"},
 			OverrideAwsProfile: true,
@@ -207,7 +298,7 @@ aws_secret_access_key = "dummy"
 		_stderr = buferr
 
 		options := &Options{
-			Config:             tomlFile.Name(),
+			ConfigGlob:         tomlFile.Name(),
 			Profile:            "profile2",
 			Command:            []string{"/bin/sh", "-c", "echo $piyo $HOGE"},
 			OverrideAwsProfile: true,
@@ -301,7 +392,7 @@ aws_secret_access_key = "dummy"
 	_stderr = buferr
 
 	options := &Options{
-		Config:             tomlFile.Name(),
+		ConfigGlob:         tomlFile.Name(),
 		Profile:            "profile1",
 		Command:            []string{"/bin/sh", "-c", "echo $FOO $BAR"},
 		OverrideAwsProfile: true,

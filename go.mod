@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.29.4
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.16
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.56.10
+	github.com/bmatcuk/doublestar/v4 v4.8.1
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/stretchr/testify v1.10.0
 )

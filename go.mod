@@ -4,12 +4,12 @@ go 1.22.4
 
 require (
 	github.com/BurntSushi/toml v1.5.0
-	github.com/alecthomas/kong v1.12.0
+	github.com/alecthomas/kong v1.12.1
 	github.com/aws/aws-sdk-go-v2 v1.36.6
 	github.com/aws/aws-sdk-go-v2/config v1.29.18
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.35.8
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.60.2
-	github.com/bmatcuk/doublestar/v4 v4.9.0
+	github.com/bmatcuk/doublestar/v4 v4.9.1
 	github.com/jarcoal/httpmock v1.4.0
 	github.com/stretchr/testify v1.10.0
 )
